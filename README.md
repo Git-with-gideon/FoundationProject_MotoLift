@@ -7,3 +7,4 @@ A USSD-native, mobile Money-integration platform that converts the daily rental 
 - Wisdom Okechukwu Ikechukwu
 - Alieu O Jobe
 - Germain Cyuzuzo
+- Igor Ntwali
