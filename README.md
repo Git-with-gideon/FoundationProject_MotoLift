@@ -4,7 +4,4 @@ A USSD-native, mobile Money-integration platform that converts the daily rental 
 
 # Team Members:
 Erioluwa Gideon Olowoyo
-Igor Ntwali
-Cyzuzo Germain
-Okechukwu Wisdom
-Alieu Jobe
+
