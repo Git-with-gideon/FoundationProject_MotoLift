@@ -1,315 +1,540 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>MotoLift — Driver Profile</title>
-  <link rel="stylesheet" href="css/app.css" />
-</head>
-<body>
-  <div class="layout">
-    <!-- Sidebar -->
-    <aside class="sidebar">
-      <div class="sidebar-brand">
-        <h2>MotoLift</h2>
-        <span>Kigali Operations</span>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>MotoLift — Driver Profile</title>
+    <style>
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        background: #f7f8fa;
+        color: #1a1a2e;
+        font-size: 14px;
+        line-height: 1.5;
+      }
+      a {
+        color: inherit;
+        text-decoration: none;
+      }
+      button {
+        cursor: pointer;
+        font: inherit;
+      }
+      .header {
+        background: #fff;
+        border-bottom: 1px solid #e5e7eb;
+        padding: 0 20px;
+        height: 56px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        position: sticky;
+        top: 0;
+        z-index: 10;
+      }
+      .hdr-left {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+      }
+      .hdr-left h1 {
+        font-size: 16px;
+        font-weight: 700;
+      }
+      .hdr-left small {
+        font-size: 12px;
+        color: #6b7280;
+      }
+      .hdr-right {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+      .sign-out {
+        font-size: 12px;
+        color: #6b7280;
+        border: none;
+        background: none;
+      }
+      .sign-out:hover {
+        color: #dc2626;
+      }
+      .content {
+        max-width: 1000px;
+        margin: 0 auto;
+        padding: 24px 20px;
+      }
+      .back {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 13px;
+        color: #6b7280;
+        margin-bottom: 20px;
+      }
+      .back:hover {
+        color: #1a1a2e;
+      }
+      .profile {
+        background: #fff;
+        border: 1px solid #e5e7eb;
+        border-radius: 10px;
+        padding: 20px 24px;
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        margin-bottom: 24px;
+      }
+      .avatar {
+        width: 48px;
+        height: 48px;
+        border-radius: 50%;
+        background: #1a1a2e;
+        color: #fff;
+        font-size: 18px;
+        font-weight: 700;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+      }
+      .profile-info h2 {
+        font-size: 17px;
+        font-weight: 700;
+      }
+      .profile-info p {
+        font-size: 13px;
+        color: #6b7280;
+        margin-top: 2px;
+      }
+      .profile-meta {
+        margin-left: auto;
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end;
+        gap: 4px;
+      }
+      .b {
+        display: inline-block;
+        padding: 2px 8px;
+        border-radius: 10px;
+        font-size: 11px;
+        font-weight: 600;
+      }
+      .b-green {
+        background: #ecfdf5;
+        color: #065f46;
+      }
+      .b-yellow {
+        background: #fffbeb;
+        color: #92400e;
+      }
+      .b-red {
+        background: #fef2f2;
+        color: #991b1b;
+      }
+      .b-gray {
+        background: #f3f4f6;
+        color: #374151;
+      }
+      .grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 20px;
+      }
+      .card {
+        background: #fff;
+        border: 1px solid #e5e7eb;
+        border-radius: 10px;
+        overflow: hidden;
+        margin-bottom: 20px;
+      }
+      .card-head {
+        padding: 14px 18px;
+        border-bottom: 1px solid #e5e7eb;
+        font-size: 14px;
+        font-weight: 600;
+      }
+      .card-body {
+        padding: 18px;
+      }
+      .detail-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 14px;
+      }
+      .detail-item label {
+        font-size: 11px;
+        text-transform: uppercase;
+        letter-spacing: 0.4px;
+        color: #6b7280;
+        margin-bottom: 2px;
+        display: block;
+      }
+      .detail-item p {
+        font-size: 13px;
+        font-weight: 500;
+      }
+      .prog {
+        height: 8px;
+        background: #e5e7eb;
+        border-radius: 99px;
+        overflow: hidden;
+        margin: 10px 0;
+      }
+      .prog-fill {
+        height: 100%;
+        background: #1a1a2e;
+        border-radius: 99px;
+      }
+      .own-labels {
+        display: flex;
+        justify-content: space-between;
+        font-size: 13px;
+      }
+      .own-pct {
+        font-weight: 700;
+        color: #1a1a2e;
+      }
+      .own-footer {
+        display: flex;
+        justify-content: space-between;
+        font-size: 12px;
+        color: #6b7280;
+      }
+      .table-wrap {
+        overflow-x: auto;
+      }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+      }
+      th {
+        text-align: left;
+        font-size: 11px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.4px;
+        color: #6b7280;
+        padding: 10px 14px;
+        border-bottom: 1px solid #e5e7eb;
+        white-space: nowrap;
+      }
+      td {
+        padding: 11px 14px;
+        border-bottom: 1px solid #f3f4f6;
+        font-size: 13px;
+        vertical-align: middle;
+      }
+      tr:last-child td {
+        border-bottom: none;
+      }
+      tbody tr:hover {
+        background: #fafbfc;
+      }
+      .actions {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+        padding: 18px;
+      }
+      .btn {
+        display: inline-flex;
+        align-items: center;
+        padding: 6px 12px;
+        border-radius: 6px;
+        font-size: 12px;
+        font-weight: 500;
+        border: 1px solid #d1d5db;
+        background: #fff;
+        color: #374151;
+        transition: background 0.15s;
+      }
+      .btn:hover {
+        background: #f3f4f6;
+      }
+      .btn-fill {
+        background: #1a1a2e;
+        color: #fff;
+        border-color: #1a1a2e;
+      }
+      .btn-fill:hover {
+        background: #2d2d44;
+      }
+      .btn-del {
+        color: #dc2626;
+        border-color: #fca5a5;
+      }
+      .btn-del:hover {
+        background: #fef2f2;
+      }
+      .empty {
+        text-align: center;
+        padding: 32px;
+        color: #9ca3af;
+        font-size: 13px;
+      }
+      @media (max-width: 700px) {
+        .grid {
+          grid-template-columns: 1fr;
+        }
+        .profile {
+          flex-wrap: wrap;
+        }
+        .profile-meta {
+          margin-left: 0;
+          align-items: flex-start;
+          margin-top: 8px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="header">
+      <div class="hdr-left">
+        <h1>MotoLift</h1>
+        <small>Admin</small>
       </div>
-      <nav class="sidebar-nav">
-        <a href="dashboard.html" class="nav-item">
-          <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
-          Overview
-        </a>
-        <a href="dashboard.html" class="nav-item active">
-          <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-          Drivers
-        </a>
-        <a href="#" class="nav-item">
-          <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/></svg>
-          Motorcycles
-        </a>
-        <a href="#" class="nav-item">
-          <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
-          Payments
-        </a>
-        <a href="#" class="nav-item">
-          <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M22 17H2a3 3 0 0 0 3-3V9a7 7 0 0 1 14 0v5a3 3 0 0 0 3 3zm-8.27 4a2 2 0 0 1-3.46 0"/></svg>
-          USSD Logs
-        </a>
-      </nav>
-      <div class="sidebar-footer">
-        <span id="sidebarUser"></span><br />
-        <a href="#" id="logoutBtn" style="color:#718096;">Sign out</a>
+      <div class="hdr-right">
+        <button class="sign-out" id="logoutBtn">Sign out</button>
       </div>
-    </aside>
+    </div>
 
-    <!-- Main -->
-    <div class="main">
-      <div class="topbar">
-        <span class="topbar-title" id="pageTitle">Driver Profile</span>
-        <div class="topbar-actions">
-          <div class="avatar" id="topAvatar">A</div>
+    <div class="content">
+      <a href="dashboard.html" class="back">&larr; Back to dashboard</a>
+
+      <div class="profile">
+        <div class="avatar" id="dAvatar">—</div>
+        <div class="profile-info">
+          <h2 id="dName">—</h2>
+          <p id="dPhone">—</p>
+        </div>
+        <div class="profile-meta">
+          <span id="dStatus" class="b b-gray">—</span>
+          <span style="font-size: 12px; color: #6b7280" id="dSince">—</span>
         </div>
       </div>
 
-      <div class="page-content">
-        <a href="dashboard.html" class="back-link">
-          <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg>
-          Back to drivers
-        </a>
-
-        <!-- Profile header -->
-        <div class="profile-header">
-          <div class="profile-avatar" id="driverAvatar">J</div>
-          <div class="profile-info">
-            <h2 id="driverName">—</h2>
-            <p id="driverPhone">—</p>
+      <div class="grid">
+        <div>
+          <div class="card">
+            <div class="card-head">Driver Details</div>
+            <div class="card-body">
+              <div class="detail-grid">
+                <div class="detail-item">
+                  <label>National ID</label>
+                  <p id="fNid">—</p>
+                </div>
+                <div class="detail-item">
+                  <label>License No.</label>
+                  <p id="fLicense">—</p>
+                </div>
+                <div class="detail-item">
+                  <label>Motorcycle</label>
+                  <p id="fBike">—</p>
+                </div>
+                <div class="detail-item">
+                  <label>Plate</label>
+                  <p id="fPlate">—</p>
+                </div>
+                <div class="detail-item">
+                  <label>Daily Payment</label>
+                  <p id="fDaily">—</p>
+                </div>
+                <div class="detail-item">
+                  <label>Total Price</label>
+                  <p id="fTotal">—</p>
+                </div>
+              </div>
+            </div>
           </div>
-          <div class="profile-meta">
-            <span id="driverStatus" class="badge">—</span>
-            <span style="font-size:12px;color:var(--muted);" id="driverSince">—</span>
+          <div class="card">
+            <div class="card-head">Actions</div>
+            <div class="actions">
+              <button class="btn btn-fill" onclick="updateStatus('ACTIVE')">
+                Set Active
+              </button>
+              <button class="btn btn-del" onclick="updateStatus('SUSPENDED')">
+                Suspend
+              </button>
+              <button class="btn" onclick="doSendSMS()">Send SMS</button>
+            </div>
           </div>
         </div>
-
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;">
-          <!-- Left col -->
-          <div>
-            <!-- Driver details -->
-            <div class="card" style="margin-bottom:20px;">
-              <div class="card-header"><h3>Driver Details</h3></div>
-              <div class="card-body">
-                <div class="detail-grid">
-                  <div class="detail-item">
-                    <label>National ID</label>
-                    <p id="nationalId">—</p>
-                  </div>
-                  <div class="detail-item">
-                    <label>License No.</label>
-                    <p id="licenseNum">—</p>
-                  </div>
-                  <div class="detail-item">
-                    <label>Motorcycle</label>
-                    <p id="bikeInfo">—</p>
-                  </div>
-                  <div class="detail-item">
-                    <label>Plate</label>
-                    <p id="plateNum">—</p>
-                  </div>
-                  <div class="detail-item">
-                    <label>Daily Payment</label>
-                    <p id="dailyAmt">—</p>
-                  </div>
-                  <div class="detail-item">
-                    <label>Total Price</label>
-                    <p id="totalAmt">—</p>
-                  </div>
-                </div>
+        <div>
+          <div class="card">
+            <div class="card-head">Ownership Progress</div>
+            <div class="card-body">
+              <div class="own-labels">
+                <span>Paid to date</span
+                ><span class="own-pct" id="oPct">0%</span>
               </div>
-            </div>
-
-            <!-- Status actions -->
-            <div class="card">
-              <div class="card-header"><h3>Actions</h3></div>
-              <div class="card-body" style="display:flex;gap:8px;flex-wrap:wrap;">
-                <button class="btn btn-outline btn-sm" onclick="updateStatus('ACTIVE')">Set Active</button>
-                <button class="btn btn-outline btn-sm" onclick="updateStatus('SUSPENDED')">Suspend</button>
-                <button class="btn btn-outline btn-sm">Send SMS</button>
+              <div class="prog">
+                <div class="prog-fill" id="oBar" style="width: 0%"></div>
+              </div>
+              <div class="own-footer">
+                <span>Paid: <strong id="oPaid">—</strong></span
+                ><span>Remaining: <strong id="oRem">—</strong></span>
               </div>
             </div>
           </div>
-
-          <!-- Right col -->
-          <div>
-            <!-- Ownership -->
-            <div class="card" style="margin-bottom:20px;">
-              <div class="card-header"><h3>Ownership Progress</h3></div>
-              <div class="ownership-block">
-                <div class="ownership-labels">
-                  <span>Paid to date</span>
-                  <span class="ownership-pct" id="ownershipPct">0%</span>
-                </div>
-                <div class="progress">
-                  <div class="progress-fill" id="ownershipBar" style="width:0%;"></div>
-                </div>
-                <div style="display:flex;justify-content:space-between;margin-top:10px;font-size:12px;color:var(--muted);">
-                  <span>Paid: <strong id="paidAmt">—</strong></span>
-                  <span>Remaining: <strong id="remainAmt">—</strong></span>
-                </div>
-              </div>
-            </div>
-
-            <!-- Payment history -->
-            <div class="card">
-              <div class="card-header"><h3>Recent Payments</h3></div>
-              <div class="table-wrap">
-                <table>
-                  <thead>
-                    <tr>
-                      <th>Date</th>
-                      <th>Amount</th>
-                      <th>Method</th>
-                      <th>Status</th>
-                    </tr>
-                  </thead>
-                  <tbody id="paymentBody">
-                    <tr><td colspan="4" class="empty">Loading...</td></tr>
-                  </tbody>
-                </table>
-              </div>
+          <div class="card">
+            <div class="card-head">Recent Payments</div>
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Date</th>
+                    <th>Amount</th>
+                    <th>Method</th>
+                    <th>Status</th>
+                  </tr>
+                </thead>
+                <tbody id="payBody">
+                  <tr>
+                    <td colspan="4" class="empty">Loading...</td>
+                  </tr>
+                </tbody>
+              </table>
             </div>
           </div>
         </div>
       </div>
     </div>
-  </div>
 
-  <script>
-    const token = localStorage.getItem('ml_token');
-    if (!token) window.location.href = 'login.html';
+    <script>
+      const token = localStorage.getItem("ml_token");
+      if (!token) window.location.href = "login.html";
+      const H = { Authorization: "Bearer " + token };
+      const driverId = new URLSearchParams(location.search).get("id");
+      let currentUserId = null;
 
-    const name = localStorage.getItem('ml_name') || 'Admin';
-    document.getElementById('sidebarUser').textContent = name;
-    document.getElementById('topAvatar').textContent = name[0].toUpperCase();
-
-    document.getElementById('logoutBtn').addEventListener('click', async () => {
-      await fetch('/api/auth/logout', {
-        method: 'POST',
-        headers: { 'Authorization': 'Bearer ' + token },
-      });
-      localStorage.clear();
-      window.location.href = 'login.html';
-    });
-
-    const params = new URLSearchParams(location.search);
-    const driverId = params.get('id');
-
-    // Dummy data
-    const DUMMY = {
-      '1': {
-        name: 'Jean Bosco Niyomugabo', phone: '+250781234567', status: 'ACTIVE', since: 'Jan 2024',
-        nationalId: '1199X XXX XXX XXX X', license: 'RW-DL-002341',
-        bike: 'TVS Apache 200', plate: 'RAD 123A',
-        daily: 5000, total: 1800000,
-        paid: 1224000, pct: 68,
-        payments: [
-          { date: '2024-03-06', amount: 5000, method: 'MoMo', status: 'SUCCESS' },
-          { date: '2024-03-05', amount: 5000, method: 'MoMo', status: 'SUCCESS' },
-          { date: '2024-03-04', amount: 5000, method: 'MoMo', status: 'SUCCESS' },
-          { date: '2024-03-03', amount: 5000, method: 'MoMo', status: 'FAILED' },
-          { date: '2024-03-02', amount: 5000, method: 'MoMo', status: 'SUCCESS' },
-          { date: '2024-03-01', amount: 5000, method: 'MoMo', status: 'SUCCESS' },
-        ],
-      },
-      '2': {
-        name: 'Yvonne Mukamana', phone: '+250782345678', status: 'ACTIVE', since: 'Apr 2024',
-        nationalId: '1199X XXX XXX XXX X', license: 'RW-DL-003892',
-        bike: 'Bajaj Boxer 150', plate: 'RAB 456B',
-        daily: 4500, total: 1620000,
-        paid: 680400, pct: 42,
-        payments: [
-          { date: '2024-03-06', amount: 4500, method: 'MoMo', status: 'SUCCESS' },
-          { date: '2024-03-05', amount: 4500, method: 'MoMo', status: 'SUCCESS' },
-          { date: '2024-03-04', amount: 4500, method: 'MoMo', status: 'SUCCESS' },
-        ],
-      },
-    };
-
-    function fmt(n) {
-      return n.toLocaleString() + ' RWF';
-    }
-
-    function statusBadge(s) {
-      const map = { ACTIVE: 'badge-success', PENDING: 'badge-warning', SUSPENDED: 'badge-danger', SUCCESS: 'badge-success', FAILED: 'badge-danger' };
-      return `<span class="badge ${map[s] || 'badge-gray'}">${s}</span>`;
-    }
-
-    function render(d) {
-      document.getElementById('pageTitle').textContent = d.name;
-      document.getElementById('driverAvatar').textContent = d.name[0].toUpperCase();
-      document.getElementById('driverName').textContent = d.name;
-      document.getElementById('driverPhone').textContent = d.phone;
-      document.getElementById('driverStatus').outerHTML = statusBadge(d.status);
-      document.getElementById('driverSince').textContent = 'Since ' + d.since;
-      document.getElementById('nationalId').textContent = d.nationalId;
-      document.getElementById('licenseNum').textContent = d.license;
-      document.getElementById('bikeInfo').textContent = d.bike;
-      document.getElementById('plateNum').textContent = d.plate;
-      document.getElementById('dailyAmt').textContent = fmt(d.daily);
-      document.getElementById('totalAmt').textContent = fmt(d.total);
-
-      document.getElementById('ownershipPct').textContent = d.pct + '%';
-      document.getElementById('ownershipBar').style.width = d.pct + '%';
-      document.getElementById('paidAmt').textContent = fmt(d.paid);
-      document.getElementById('remainAmt').textContent = fmt(d.total - d.paid);
-
-      const tbody = document.getElementById('paymentBody');
-      tbody.innerHTML = d.payments.map(p => `
-        <tr>
-          <td style="color:var(--muted);">${p.date}</td>
-          <td style="font-weight:500;">${fmt(p.amount)}</td>
-          <td>${p.method}</td>
-          <td>${statusBadge(p.status)}</td>
-        </tr>
-      `).join('');
-    }
-
-    async function load() {
-      // Try real API first
-      if (driverId) {
-        try {
-          const res = await fetch(`/api/drivers/${driverId}`, {
-            headers: { 'Authorization': 'Bearer ' + token },
-          });
-          if (res.ok) {
-            const d = await res.json();
-            const ag = d.agreements[0];
-            render({
-              name: d.user.name || d.user.phone,
-              phone: d.user.phone,
-              status: d.status,
-              since: new Date(d.user.createdAt).toLocaleDateString('en-GB', { month: 'short', year: 'numeric' }),
-              nationalId: d.nationalId,
-              license: d.licenseNumber,
-              bike: ag ? `${ag.motorcycle.make} ${ag.motorcycle.model}` : '—',
-              plate: ag?.motorcycle?.plateNumber || '—',
-              daily: ag?.dailyPayment || 0,
-              total: ag?.totalAmount || 0,
-              paid: ag?.escrow[0]?.totalPaid || 0,
-              pct: ag?.escrow[0]?.ownershipPercentage || 0,
-              payments: (ag?.payments || []).map(p => ({
-                date: p.createdAt?.slice(0, 10),
-                amount: p.amount,
-                method: p.method,
-                status: p.status,
-              })),
-            });
-            return;
-          }
-        } catch { /* fall through */ }
-      }
-
-      // Fallback to dummy
-      const d = DUMMY[driverId] || DUMMY['1'];
-      render(d);
-    }
-
-    async function updateStatus(status) {
-      if (!driverId) return;
-      try {
-        const res = await fetch(`/api/drivers/${driverId}/status`, {
-          method: 'PATCH',
-          headers: {
-            'Authorization': 'Bearer ' + token,
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ status }),
+      document
+        .getElementById("logoutBtn")
+        .addEventListener("click", async () => {
+          await fetch("/api/auth/logout", { method: "POST", headers: H });
+          localStorage.clear();
+          window.location.href = "login.html";
         });
-        if (res.ok) alert('Status updated to ' + status);
-      } catch {
-        alert('Backend not connected — status update skipped');
-      }
-    }
 
-    load();
-  </script>
-</body>
+      function fmt(n) {
+        return Number(n).toLocaleString() + " RWF";
+      }
+      function badge(s) {
+        const m = {
+          ACTIVE: "b-green",
+          PENDING: "b-yellow",
+          SUSPENDED: "b-red",
+          SUCCESS: "b-green",
+          FAILED: "b-red",
+        };
+        return `<span class="b ${m[s] || "b-gray"}">${s}</span>`;
+      }
+
+      function render(d) {
+        document.title = "MotoLift — " + d.name;
+        document.getElementById("dAvatar").textContent =
+          d.name[0].toUpperCase();
+        document.getElementById("dName").textContent = d.name;
+        document.getElementById("dPhone").textContent = d.phone;
+        document.getElementById("dStatus").outerHTML = badge(d.status);
+        document.getElementById("dSince").textContent = "Since " + d.since;
+        document.getElementById("fNid").textContent = d.nationalId;
+        document.getElementById("fLicense").textContent = d.license;
+        document.getElementById("fBike").textContent = d.bike;
+        document.getElementById("fPlate").textContent = d.plate;
+        document.getElementById("fDaily").textContent = fmt(d.daily);
+        document.getElementById("fTotal").textContent = fmt(d.total);
+        const pct = Number(d.pct).toFixed(1);
+        document.getElementById("oPct").textContent = pct + "%";
+        document.getElementById("oBar").style.width = pct + "%";
+        document.getElementById("oPaid").textContent = fmt(d.paid);
+        document.getElementById("oRem").textContent = fmt(d.total - d.paid);
+        const tb = document.getElementById("payBody");
+        if (!d.payments.length) {
+          tb.innerHTML =
+            '<tr><td colspan="4" class="empty">No payments yet.</td></tr>';
+          return;
+        }
+        tb.innerHTML = d.payments
+          .map(
+            (p) =>
+              `<tr><td style="color:#6b7280">${p.date}</td><td style="font-weight:500">${fmt(p.amount)}</td><td>${p.method}</td><td>${badge(p.status)}</td></tr>`,
+          )
+          .join("");
+      }
+
+      async function load() {
+        if (!driverId) {
+          window.location.href = "dashboard.html";
+          return;
+        }
+        try {
+          const res = await fetch(`/api/drivers/${driverId}`, { headers: H });
+          if (!res.ok) throw new Error();
+          const d = await res.json();
+          currentUserId = d.userId;
+          const ag = d.agreements[0];
+          render({
+            name: d.user.name || d.user.phone,
+            phone: d.user.phone,
+            status: d.status,
+            since: new Date(d.user.createdAt).toLocaleDateString("en-GB", {
+              month: "short",
+              year: "numeric",
+            }),
+            nationalId: d.nationalId,
+            license: d.licenseNumber,
+            bike: ag ? `${ag.motorcycle.make} ${ag.motorcycle.model}` : "—",
+            plate: ag?.motorcycle?.plateNumber || "—",
+            daily: ag?.dailyPayment || 0,
+            total: ag?.totalAmount || 0,
+            paid: ag?.escrow[0]?.totalPaid || 0,
+            pct: ag?.escrow[0]?.ownershipPercentage || 0,
+            payments: (ag?.payments || []).map((p) => ({
+              date: p.createdAt?.slice(0, 10),
+              amount: p.amount,
+              method: p.method,
+              status: p.status,
+            })),
+          });
+        } catch {
+          document.getElementById("dName").textContent = "Driver not found";
+        }
+      }
+
+      async function updateStatus(s) {
+        const res = await fetch(`/api/drivers/${driverId}/status`, {
+          method: "PATCH",
+          headers: { ...H, "Content-Type": "application/json" },
+          body: JSON.stringify({ status: s }),
+        });
+        if (res.ok) {
+          alert("Status updated to " + s);
+          load();
+        } else alert("Failed.");
+      }
+
+      async function doSendSMS() {
+        const msg = prompt("Enter SMS message:");
+        if (!msg || !currentUserId) return;
+        const res = await fetch("/api/notifications/send", {
+          method: "POST",
+          headers: { ...H, "Content-Type": "application/json" },
+          body: JSON.stringify({ userId: currentUserId, message: msg }),
+        });
+        if (res.ok) alert("SMS sent.");
+        else alert("Failed.");
+      }
+
+      load();
+    </script>
+  </body>
 </html>
