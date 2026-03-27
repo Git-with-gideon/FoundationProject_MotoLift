@@ -46,5 +46,8 @@ app.get("/owner", (req, res) => {
 
 app.listen(PORT, () => {
   console.log(`MotoLift server running on port ${PORT}`);
-  startScheduler();
+
+  if (process.env.ENABLE_SCHEDULER === "true") {
+    startScheduler();
+  }
 });
