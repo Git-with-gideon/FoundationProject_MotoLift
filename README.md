@@ -10,6 +10,8 @@ A USSD-native, Mobile Money-integrated platform that converts daily motorcycle r
 
 **Task Sheet:**https://docs.google.com/spreadsheets/d/1iEqdtwhfFibff4vJWTb1KE4MlSolgAJR1WLhSyDbazY
 
+**Youtueb:**https://youtu.be/CQwgzxcMmuo
+
 ## Problem
 
 Over 70,000 motorcycles operate as moto-taxis in Rwanda. Most drivers don't own their bikes — they pay daily rental fees to fleet owners, consuming a large share of their income with no path to ownership. Existing solutions either require smartphones (which 66% of households don't have) or rigid monthly loan structures that don't match daily cash flows.
