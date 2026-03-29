@@ -18,7 +18,7 @@ MotoLift lets drivers register, browse available motorcycles, and make daily pay
 
 ## System Architecture
 
-![MotoLift System Architecture](public/images/architecture.png)
+![MotoLift System Architecture](docs/images/architecture.png)
 
 ## Features
 
@@ -132,11 +132,11 @@ npm test                   # Run all 23 tests
 
 ## Database Schema (ERD)
 
-![MotoLift Entity-Relationship Diagram](public/images/erd.png)
+![MotoLift Entity-Relationship Diagram](docs/images/erd.png)
 
 ## UML Class Diagram
 
-![MotoLift UML Diagram](public/images/uml.png)
+![MotoLift UML Diagram](docs/images/uml.png)
 
 ## USSD Flow
 
