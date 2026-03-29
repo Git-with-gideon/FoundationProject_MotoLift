@@ -33,8 +33,12 @@ router.post("/", async (req, res) => {
     res.send(`CON ${msg}`);
   }
 
+  // "00" from any submenu = back to main menu
+  if (last === "00" && level > 1) {
+    return cont(await mainMenu(phoneNumber));
+  }
+
   try {
-    // Find user by phone
     const user = await db.user.findUnique({
       where: { phone: phoneNumber },
       include: {
@@ -54,17 +58,29 @@ router.post("/", async (req, res) => {
       },
     });
 
-    // Root menu — different for registered vs new users
+    // ── Root menu ─────────────────────────────────────────────
     if (input === "") {
       if (user?.driver) {
-        return cont(
-          "Welcome to MotoLift\n" +
-            "1. My Status\n" +
-            "2. Make Payment\n" +
-            "3. Recent Payments\n" +
-            "4. Log Dispute\n" +
-            "0. Exit",
-        );
+        const ag = user.driver.agreements[0];
+        if (ag) {
+          return cont(
+            "Welcome to MotoLift\n" +
+              "1. My Status\n" +
+              "2. Make Payment\n" +
+              "3. Recent Payments\n" +
+              "4. Log Dispute\n" +
+              "0. Exit",
+          );
+        } else {
+          return cont(
+            "Welcome to MotoLift\n" +
+              `Driver: ${user.name}\n` +
+              `Status: ${user.driver.status}\n\n` +
+              "1. Browse Available Bikes\n" +
+              "2. My Status\n" +
+              "0. Exit",
+          );
+        }
       } else {
         return cont(
           "Welcome to MotoLift\n" +
@@ -75,44 +91,38 @@ router.post("/", async (req, res) => {
       }
     }
 
-    // Exit
     if (input === "0") return end("Thank you for using MotoLift. Goodbye!");
 
     // ══════════════════════════════════════════════════════════
     //   UNREGISTERED USER FLOW
     // ══════════════════════════════════════════════════════════
     if (!user?.driver) {
-      // ── 1. Register ─────────────────────────────────────────
       if (parts[0] === "1") {
         if (!enrollSessions[sessionId]) {
           enrollSessions[sessionId] = { _ts: Date.now() };
         }
         const s = enrollSessions[sessionId];
 
-        // Step 1: Full name
         if (level === 1) {
-          return cont("Enter your full name:");
+          return cont("Enter your full name:\n\n00. Main menu");
         }
 
-        // Step 2: Got name, ask national ID
         if (level === 2) {
           if (!last || last.length < 3 || last.length > 100) {
             return end("Invalid name. Must be 3-100 characters.");
           }
           s.name = last.trim();
-          return cont("Enter your National ID number:");
+          return cont("Enter your National ID number:\n\n00. Main menu");
         }
 
-        // Step 3: Got national ID, ask license
         if (level === 3) {
           if (!last || last.length < 10 || last.length > 20) {
             return end("Invalid National ID. Must be 10-20 characters.");
           }
           s.nationalId = last.trim();
-          return cont("Enter your driving license number:");
+          return cont("Enter your driving license number:\n\n00. Main menu");
         }
 
-        // Step 4: Got license, confirm
         if (level === 4) {
           s.licenseNumber = last.trim();
           return cont(
@@ -125,14 +135,12 @@ router.post("/", async (req, res) => {
           );
         }
 
-        // Step 5: Confirm or cancel
         if (level === 5) {
           if (last !== "1") {
             delete enrollSessions[sessionId];
             return end("Registration cancelled.");
           }
 
-          // Create user + driver
           const password = crypto.randomBytes(4).toString("hex");
           const passwordHash = crypto
             .createHash("sha256")
@@ -173,13 +181,12 @@ router.post("/", async (req, res) => {
             `Registration successful!\n` +
               `Name: ${s.name}\n` +
               `Status: PENDING\n\n` +
-              `An admin will review your account and assign you a motorcycle.\n` +
-              `You will receive an SMS when activated.`,
+              `Dial *384# again to browse\n` +
+              `available bikes and select one.`,
           );
         }
       }
 
-      // ── 2. Check Status (unregistered) ──────────────────────
       if (parts[0] === "2") {
         return end(
           "No account found for this number.\nPlease register first (option 1).",
@@ -190,16 +197,163 @@ router.post("/", async (req, res) => {
     }
 
     // ══════════════════════════════════════════════════════════
-    //   REGISTERED DRIVER FLOW
+    //   REGISTERED DRIVER — NO AGREEMENT (browse bikes)
+    // ══════════════════════════════════════════════════════════
+    const ag = user.driver.agreements[0];
+
+    if (!ag) {
+      if (parts[0] === "1") {
+        if (level === 1) {
+          const bikes = await db.motorcycle.findMany({
+            where: { status: "AVAILABLE" },
+            include: { owner: { select: { name: true } } },
+            take: 7,
+          });
+
+          if (bikes.length === 0) {
+            return end("No bikes available right now.\nCheck back later.");
+          }
+
+          if (!enrollSessions[sessionId]) enrollSessions[sessionId] = { _ts: Date.now() };
+          enrollSessions[sessionId].bikes = bikes;
+
+          let menu = "Available Bikes:\n\n";
+          bikes.forEach((b, i) => {
+            const daily = Math.ceil(b.totalPrice / 540);
+            menu += `${i + 1}. ${b.make} ${b.model} (${b.plateNumber})\n`;
+            menu += `   ${daily.toLocaleString()} RWF/day\n`;
+          });
+          menu += "\n0. Back";
+
+          return cont(menu);
+        }
+
+        if (level === 2) {
+          if (last === "0") {
+            return cont(
+              "Welcome to MotoLift\n" +
+                `Driver: ${user.name}\n` +
+                `Status: ${user.driver.status}\n\n` +
+                "1. Browse Available Bikes\n" +
+                "2. My Status\n" +
+                "0. Exit",
+            );
+          }
+
+          const s = enrollSessions[sessionId];
+          if (!s?.bikes) return end("Session expired. Dial *384# again.");
+
+          const idx = parseInt(last) - 1;
+          if (isNaN(idx) || idx < 0 || idx >= s.bikes.length) {
+            return end("Invalid selection. Dial *384# to try again.");
+          }
+
+          const bike = s.bikes[idx];
+          const daily = Math.ceil(bike.totalPrice / 540);
+          s.selectedBike = bike;
+          s.dailyPayment = daily;
+
+          return cont(
+            `Selected Bike:\n` +
+              `${bike.make} ${bike.model}\n` +
+              `Plate: ${bike.plateNumber}\n` +
+              `Price: ${bike.totalPrice.toLocaleString()} RWF\n` +
+              `Daily: ${daily.toLocaleString()} RWF\n` +
+              `Duration: 18 months\n\n` +
+              `1. Confirm & Start\n` +
+              `0. Back to bikes`,
+          );
+        }
+
+        if (level === 3) {
+          if (last === "0") {
+            // Go back to bike list
+            const bikes = await db.motorcycle.findMany({
+              where: { status: "AVAILABLE" },
+              take: 7,
+            });
+            if (!enrollSessions[sessionId]) enrollSessions[sessionId] = { _ts: Date.now() };
+            enrollSessions[sessionId].bikes = bikes;
+
+            let menu = "Available Bikes:\n\n";
+            bikes.forEach((b, i) => {
+              const daily = Math.ceil(b.totalPrice / 540);
+              menu += `${i + 1}. ${b.make} ${b.model} (${b.plateNumber})\n`;
+              menu += `   ${daily.toLocaleString()} RWF/day\n`;
+            });
+            menu += "\n0. Back";
+            return cont(menu);
+          }
+
+          if (last !== "1") {
+            delete enrollSessions[sessionId];
+            return end("Selection cancelled.");
+          }
+
+          const s = enrollSessions[sessionId];
+          if (!s?.selectedBike) return end("Session expired. Dial *384# again.");
+
+          const bike = s.selectedBike;
+          const daily = s.dailyPayment;
+
+          try {
+            await db.$transaction(async (tx) => {
+              await tx.rentalAgreement.create({
+                data: {
+                  driverId: user.driver.id,
+                  motorcycleId: bike.id,
+                  dailyPayment: daily,
+                  totalAmount: bike.totalPrice,
+                  expectedEndDate: new Date(Date.now() + 540 * 24 * 60 * 60 * 1000),
+                },
+              });
+              await tx.motorcycle.update({
+                where: { id: bike.id },
+                data: { status: "RENTED" },
+              });
+              await tx.driver.update({
+                where: { id: user.driver.id },
+                data: { status: "ACTIVE" },
+              });
+            });
+          } catch (err) {
+            delete enrollSessions[sessionId];
+            return end("Error selecting bike. It may have been taken. Try again.");
+          }
+
+          delete enrollSessions[sessionId];
+          return end(
+            `Bike assigned!\n\n` +
+              `${bike.make} ${bike.model}\n` +
+              `Plate: ${bike.plateNumber}\n` +
+              `Daily payment: ${daily.toLocaleString()} RWF\n` +
+              `Status: ACTIVE\n\n` +
+              `Dial *384# to make your\n` +
+              `first payment.`,
+          );
+        }
+      }
+
+      if (parts[0] === "2") {
+        return end(
+          `MotoLift Status\n` +
+            `Driver: ${user.name}\n` +
+            `Status: ${user.driver.status}\n\n` +
+            `No bike assigned yet.\n` +
+            `Select option 1 to browse\n` +
+            `available bikes.`,
+        );
+      }
+
+      return end("Invalid option.");
+    }
+
+    // ══════════════════════════════════════════════════════════
+    //   ACTIVE DRIVER WITH AGREEMENT
     // ══════════════════════════════════════════════════════════
 
     // ── 1. My Status ──────────────────────────────────────────
     if (parts[0] === "1") {
-      const ag = user.driver.agreements[0];
-      if (!ag)
-        return end(
-          `MotoLift Status\nDriver: ${user.name}\nStatus: ${user.driver.status}\n\nNo active agreement yet.\nWait for admin to assign a motorcycle.`,
-        );
       const pct = ag.escrow[0]?.ownershipPercentage?.toFixed(1) || "0.0";
       const paid = ag.escrow[0]?.totalPaid || 0;
       const remaining = ag.totalAmount - paid;
@@ -216,23 +370,26 @@ router.post("/", async (req, res) => {
 
     // ── 2. Make Payment ───────────────────────────────────────
     if (parts[0] === "2") {
-      const ag = user.driver.agreements[0];
-      if (!ag)
-        return end(
-          "No active agreement found. Wait for admin to assign a motorcycle.",
-        );
-
       if (level === 1) {
         return cont(
           `Pay ${ag.dailyPayment.toLocaleString()} RWF for ${ag.motorcycle.plateNumber}\n\n` +
             "Select method:\n" +
             "1. MTN MoMo\n" +
             "2. Airtel Money\n" +
-            "0. Cancel",
+            "0. Back",
         );
       }
 
-      if (last === "0") return end("Payment cancelled.");
+      if (last === "0" && level === 2) {
+        return cont(
+          "Welcome to MotoLift\n" +
+            "1. My Status\n" +
+            "2. Make Payment\n" +
+            "3. Recent Payments\n" +
+            "4. Log Dispute\n" +
+            "0. Exit",
+        );
+      }
 
       const methodMap = { 1: "MOMO", 2: "AIRTEL" };
       const method = methodMap[parts[1]];
@@ -240,11 +397,21 @@ router.post("/", async (req, res) => {
 
       if (level === 2) {
         return cont(
-          `Confirm payment of ${ag.dailyPayment.toLocaleString()} RWF via ${parts[1] === "1" ? "MTN MoMo" : "Airtel Money"}?\n1. Confirm\n0. Cancel`,
+          `Confirm payment of ${ag.dailyPayment.toLocaleString()} RWF via ${parts[1] === "1" ? "MTN MoMo" : "Airtel Money"}?\n\n1. Confirm\n0. Back`,
         );
       }
 
       if (level === 3) {
+        if (last === "0") {
+          return cont(
+            `Pay ${ag.dailyPayment.toLocaleString()} RWF for ${ag.motorcycle.plateNumber}\n\n` +
+              "Select method:\n" +
+              "1. MTN MoMo\n" +
+              "2. Airtel Money\n" +
+              "0. Back",
+          );
+        }
+
         if (last !== "1") return end("Payment cancelled.");
 
         const externalId = `ussd-${sessionId}-${Date.now()}`;
@@ -310,9 +477,6 @@ router.post("/", async (req, res) => {
 
     // ── 3. Recent Payments ────────────────────────────────────
     if (parts[0] === "3") {
-      const ag = user.driver.agreements[0];
-      if (!ag) return end("No active agreement found.");
-
       const payments = ag.payments.slice(0, 5);
       if (!payments.length) return end("No payments recorded yet.");
 
@@ -335,7 +499,19 @@ router.post("/", async (req, res) => {
             "1. Payment not recorded\n" +
             "2. Wrong amount charged\n" +
             "3. Agreement dispute\n" +
-            "4. Other",
+            "4. Other\n" +
+            "0. Back",
+        );
+      }
+
+      if (last === "0" && level === 2) {
+        return cont(
+          "Welcome to MotoLift\n" +
+            "1. My Status\n" +
+            "2. Make Payment\n" +
+            "3. Recent Payments\n" +
+            "4. Log Dispute\n" +
+            "0. Exit",
         );
       }
 
@@ -347,7 +523,6 @@ router.post("/", async (req, res) => {
       };
       const description = disputeTypes[last] || "Other issue";
 
-      const ag = user.driver.agreements[0];
       const dispute = await db.dispute.create({
         data: {
           driverId: user.driver.id,
@@ -368,5 +543,21 @@ router.post("/", async (req, res) => {
     end("Service error. Please try again later.");
   }
 });
+
+// Helper to build main menu for back navigation
+async function mainMenu(phoneNumber) {
+  const user = await db.user.findUnique({
+    where: { phone: phoneNumber },
+    include: { driver: { include: { agreements: { where: { status: "ACTIVE" }, take: 1 } } } },
+  });
+
+  if (user?.driver?.agreements?.[0]) {
+    return "Welcome to MotoLift\n1. My Status\n2. Make Payment\n3. Recent Payments\n4. Log Dispute\n0. Exit";
+  }
+  if (user?.driver) {
+    return `Welcome to MotoLift\nDriver: ${user.name}\nStatus: ${user.driver.status}\n\n1. Browse Available Bikes\n2. My Status\n0. Exit`;
+  }
+  return "Welcome to MotoLift\n1. Register as Driver\n2. Check Status\n0. Exit";
+}
 
 module.exports = router;

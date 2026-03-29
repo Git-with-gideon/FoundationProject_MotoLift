@@ -474,6 +474,21 @@
             <div class="stat-sub">RWF left</div>
           </div>
         </div>
+        <!-- Fleet Analytics -->
+        <div class="card">
+          <div class="card-head"><span>Fleet Analytics</span></div>
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px; padding:16px;">
+            <div style="border:1px solid #e5e7eb; border-radius:8px; padding:12px;">
+              <div style="font-size:12px; font-weight:600; color:#6b7280; margin-bottom:8px;">Payment Collection Trend</div>
+              <div style="position:relative; height:220px;"><canvas id="ownerPayChart"></canvas></div>
+            </div>
+            <div style="border:1px solid #e5e7eb; border-radius:8px; padding:12px;">
+              <div style="font-size:12px; font-weight:600; color:#6b7280; margin-bottom:8px;">Fleet Status Breakdown</div>
+              <div style="position:relative; height:220px;"><canvas id="ownerFleetChart"></canvas></div>
+            </div>
+          </div>
+        </div>
+
         <div class="card">
           <div class="card-head">
             <span>Fleet</span
@@ -1069,6 +1084,100 @@
       }
 
       loadFleet();
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+      // Owner dashboard charts
+      const chartInstances = {};
+      function destroyChart(id) {
+        if (chartInstances[id]) { chartInstances[id].destroy(); delete chartInstances[id]; }
+      }
+
+      async function renderOwnerCharts() {
+        try {
+          // Get payment data
+          const payRes = await fetch("/api/owner/payments", { headers: { Authorization: "Bearer " + token } });
+          const payments = await payRes.json();
+
+          // Get fleet data
+          const fleetRes = await fetch("/api/owner/summary", { headers: { Authorization: "Bearer " + token } });
+          const fleet = await fleetRes.json();
+
+          // ── Payment Collection Trend (line chart) ──
+          const monthMap = {};
+          (Array.isArray(payments) ? payments : []).forEach(p => {
+            if (p.status !== "SUCCESS") return;
+            const d = new Date(p.paidAt || p.createdAt);
+            const key = d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0");
+            monthMap[key] = (monthMap[key] || 0) + p.amount;
+          });
+          const sortedMonths = Object.keys(monthMap).sort();
+          const labels = sortedMonths.map(m => {
+            const [y, mo] = m.split("-");
+            return ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"][parseInt(mo)-1] + " " + y.slice(2);
+          });
+          const values = sortedMonths.map(m => monthMap[m]);
+
+          destroyChart("ownerPayChart");
+          const payCtx = document.getElementById("ownerPayChart");
+          if (payCtx && labels.length > 0) {
+            chartInstances["ownerPayChart"] = new Chart(payCtx, {
+              type: "line",
+              data: {
+                labels,
+                datasets: [{
+                  label: "Collected (RWF)",
+                  data: values,
+                  borderColor: "#2563eb",
+                  backgroundColor: "rgba(37,99,235,0.1)",
+                  fill: true,
+                  tension: 0.3,
+                  pointRadius: 4,
+                }]
+              },
+              options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: { y: { beginAtZero: true, ticks: { callback: v => (v/1000)+"K" } } }
+              }
+            });
+          }
+
+          // ── Fleet Status Breakdown (donut chart) ──
+          const statusCount = { AVAILABLE: 0, RENTED: 0, OWNED: 0, MAINTENANCE: 0 };
+          (Array.isArray(fleet) ? fleet : []).forEach(b => {
+            statusCount[b.status] = (statusCount[b.status] || 0) + 1;
+          });
+          const statusLabels = Object.keys(statusCount).filter(k => statusCount[k] > 0);
+          const statusValues = statusLabels.map(k => statusCount[k]);
+          const statusColors = { AVAILABLE: "#22c55e", RENTED: "#eab308", OWNED: "#2563eb", MAINTENANCE: "#ef4444" };
+
+          destroyChart("ownerFleetChart");
+          const fleetCtx = document.getElementById("ownerFleetChart");
+          if (fleetCtx && statusValues.length > 0) {
+            chartInstances["ownerFleetChart"] = new Chart(fleetCtx, {
+              type: "doughnut",
+              data: {
+                labels: statusLabels,
+                datasets: [{
+                  data: statusValues,
+                  backgroundColor: statusLabels.map(k => statusColors[k] || "#9ca3af"),
+                }]
+              },
+              options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { position: "bottom" } }
+              }
+            });
+          }
+        } catch (err) {
+          console.error("Chart error:", err);
+        }
+      }
+
+      renderOwnerCharts();
     </script>
   </body>
 </html>

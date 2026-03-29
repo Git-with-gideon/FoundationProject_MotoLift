@@ -18,13 +18,12 @@
 
 **March 2026**
 
-\newpage
 
 ## Abstract
 
-Motorcycle taxi (moto) drivers in Kigali, Rwanda, pay daily rental fees to fleet owners with no path toward asset ownership. This report presents MotoLift, a USSD-native and Mobile Money-integrated platform designed and built to convert those daily rental payments into structured rent-to-own installments tracked through an automated escrow ledger. The system was implemented using Node.js, Express, and PostgreSQL with Prisma ORM on the backend, and vanilla HTML, CSS, and JavaScript on the frontend. Drivers interacted with the platform through USSD menus on basic feature phones, while owners and administrators used role-based web dashboards to manage fleets and monitor payment progress. A six-week simulated pilot in the Kimironko sector of Kigali with 15 drivers and 4 owners processed 571 successful payments out of 630 possible, achieving a 90.6% on-time payment rate and 99.8% escrow reconciliation accuracy. These results demonstrated that accessible technology can formalize informal rental arrangements and create a viable path from renter to owner.
+In Kigali, Rwanda, the motorcycle taxi (moto) drivers pay a daily rental payment to the fleet owners, and there is no route towards owning assets. The present report is an offering of MotoLift, a USSD-native and Mobile Money-enabled platform that is developed and implemented to transform those payments made on a daily basis as rentals into a structured rent to own payment system managed using an automated escrow ledger. The implementation of the system was based on Node.js, Express, and PostgreSQL including Prisma ORM on the back end and vanilla HTML, CSS, and JavaScript on the front end. Drivers communicated with the platform via USSD menus on simple feature phones, whereas owners and administrators through role-based web dashboards to control fleets and track payment progress. A six-week simulated pilot in the Kimironko sector of Kigali comprising of 15 drivers and 4 owners executed 571 successful payments on 630 potential payments with a 90.6 and 99.8 on time payment and escrow reconciliation measurements respectively. These findings showed that available technology can institutionalize informal rental agreements and establish a decent avenue between a renter and an owner.
 
-\newpage
+
 
 ## Table of Contents
 
@@ -79,17 +78,17 @@ Motorcycle taxi (moto) drivers in Kigali, Rwanda, pay daily rental fees to fleet
 
 ### 1.1 Introduction and Background
 
-Motorcycle driving is a critical source of income in Rwanda, with approximately 110,000 motorcycles nationwide and 70,000 operating as moto-taxis. Roughly 30,000 navigated Kigali alone (Mitigation Action Facility, 2025). However, most drivers did not own their motorcycles. They paid daily rental fees to owners or cooperatives, consuming a significant portion of their take-home pay with no path to equity.
+Rwanda highly depends on motorcycle driving as a source of income and about 110,000 motorcycles are present in the country with about 70,000 of them employed as moto-taxis. About 30,000 made their way to Kigali on their own (Mitigation Action Facility, 2025). Nonetheless, the majority of motorcycle riders did not own the motorcycles. They were charged with daily rent to owners or cooperatives and were eating a big chunk of their pay-home with no equity route.
 
-Structured software solutions had ignored this problem. Rental agreements happened informally through word of mouth or paper contracts. Drivers sent daily rent via Mobile Money, which moved cash but lacked automated ledger tracking, milestone management, or dispute resolution. MotoLift was designed to fill this gap.
+This problem had been overlooked using structured software solutions. Renting occurred in an informal manner whereby it was done by word of mouth or on paper. Drivers were paid money in daily rent through Mobile Money which transferred money but did not have automated ledger tracking, milestone management and dispute resolution. MotoLift was meant to bridge this gap.
 
 ### 1.2 Problem Statement
 
-Many moto-taxi drivers in Kigali relied on motorcycles they did not own. Daily rental payments absorbed a large share of income, leaving no room for savings (Hasselwander et al., 2025). Two types of existing solutions had major flaws: microfinance required heavy paperwork and rigid monthly schedules misaligned with daily earnings, while app-based leasing forced smartphone usage that most drivers did not have. No accessible feature-phone-friendly system existed to convert daily payments into verifiable equity.
+Most moto-taxi drivers in Kigali used their motorcycles which were not their own. The cost of paying daily rental consumed a big portion of earnings, and there was no space to save (Hasselwander et al., 2025). Two forms of current solutions were very flawed; microfinance was too paperwork-intensive and had strict monthly payments that were incongruent with the daily income, and app-based leasing also necessitated smartphone application usage that most drivers lacked. There was no available system, feature-phone friendly, that could convert the daily payment into an equity which could be verified.
 
 ### 1.3 Project's Main Objective
 
-The overall aim was to develop and deploy MotoLift, a USSD-native and Mobile Money-integrated platform that streamlined daily motorcycle rental payments through automated workflows aligned with drivers' everyday cash-flow patterns.
+ 
 
 #### 1.3.1 List of Specific Objectives
 
@@ -475,11 +474,11 @@ MotoLift demonstrated that a USSD-native platform could transform informal renta
 
 ### Recommendations
 
-1. Deploy with real MTN MoMo and Airtel Money credentials.
-2. Add Kinyarwanda translations for all USSD menus and SMS.
-3. Integrate KYC-Lite verification via NIDA API.
-4. Build a Progressive Web App for offline-capable owner dashboard.
-5. Scale to Musanze, Rubavu, and Huye after Kigali validation.
+1. We would work towards deeploying MotoLift with real MTN MoMo and Airtel Money credentials.
+2. Adding Kinyarwanda translations for all USSD menus and SMS.
+3. Integrating KYC-Lite verification via NIDA API.
+4. Building a Mobile App for offline-capable owner dashboard.
+5. Scale MotoLift to Musanze, Rubavu, and Huye after Kigali validation.
 
 ### GitHub Repository
 
