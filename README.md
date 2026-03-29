@@ -16,6 +16,10 @@ Over 70,000 motorcycles operate as moto-taxis in Rwanda. Most drivers don't own 
 
 MotoLift lets drivers register, browse available motorcycles, and make daily payments entirely through USSD (`*384#`) on basic feature phones. Each payment is tracked in an escrow ledger that calculates ownership percentage. After approximately 18 months of daily payments, the driver reaches 100% ownership and the motorcycle is transferred.
 
+## System Architecture
+
+![MotoLift System Architecture](public/images/architecture.png)
+
 ## Features
 
 - **USSD Interface** — Drivers register, browse bikes, make payments, check status, and log disputes from any feature phone
@@ -125,6 +129,14 @@ The server starts at `http://localhost:3000`.
 ```bash
 npm test                   # Run all 23 tests
 ```
+
+## Database Schema (ERD)
+
+![MotoLift Entity-Relationship Diagram](public/images/erd.png)
+
+## UML Class Diagram
+
+![MotoLift UML Diagram](public/images/uml.png)
 
 ## USSD Flow
 
