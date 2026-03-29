@@ -24,7 +24,14 @@ router.post("/initiate", requireAuth, async (req, res) => {
     if (agreement.status !== "ACTIVE")
       return res.status(400).json({ error: "Agreement is not active" });
 
+    const VALID_METHODS = ["MOMO", "AIRTEL", "CASH"];
     const paymentMethod = method || "MOMO";
+    if (!VALID_METHODS.includes(paymentMethod)) {
+      return res.status(400).json({ error: "Invalid payment method. Use MOMO, AIRTEL, or CASH" });
+    }
+    if (agreement.dailyPayment <= 0) {
+      return res.status(400).json({ error: "Invalid payment amount" });
+    }
     const externalId = `ml-${Date.now()}`;
 
     // Create pending payment record

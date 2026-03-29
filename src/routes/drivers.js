@@ -40,6 +40,18 @@ router.post("/", requireAdmin, async (req, res) => {
       .json({ error: "Invalid license. Use format:RD344F" });
   }
 
+  const parsedDaily = parseInt(dailyPayment);
+  const parsedTotal = parseInt(totalAmount);
+  if (isNaN(parsedDaily) || parsedDaily <= 0) {
+    return res.status(400).json({ error: "dailyPayment must be a positive number" });
+  }
+  if (isNaN(parsedTotal) || parsedTotal <= 0) {
+    return res.status(400).json({ error: "totalAmount must be a positive number" });
+  }
+  if (parsedDaily > parsedTotal) {
+    return res.status(400).json({ error: "dailyPayment cannot exceed totalAmount" });
+  }
+
   try {
     const crypto = require("crypto");
     const defaultPassword = crypto.randomBytes(4).toString("hex");

@@ -70,14 +70,23 @@ router.post("/", requireAdmin, async (req, res) => {
     });
   }
 
+  const parsedYear = parseInt(year);
+  const parsedPrice = parseInt(totalPrice);
+  if (isNaN(parsedYear) || parsedYear < 2000 || parsedYear > new Date().getFullYear() + 1) {
+    return res.status(400).json({ error: "Year must be between 2000 and next year" });
+  }
+  if (isNaN(parsedPrice) || parsedPrice <= 0) {
+    return res.status(400).json({ error: "totalPrice must be a positive number" });
+  }
+
   try {
     const moto = await db.motorcycle.create({
       data: {
         plateNumber: normalizedPlate,
         make,
         model,
-        year: parseInt(year),
-        totalPrice: parseInt(totalPrice),
+        year: parsedYear,
+        totalPrice: parsedPrice,
         ownerId: ownerId || null,
       },
     });

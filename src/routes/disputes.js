@@ -74,6 +74,11 @@ router.get("/", requireAdmin, async (req, res) => {
 // PATCH /api/disputes/:id/review
 router.patch("/:id/review", requireAdmin, async (req, res) => {
   try {
+    const existing = await db.dispute.findUnique({ where: { id: req.params.id } });
+    if (!existing) return res.status(404).json({ error: "Dispute not found" });
+    if (existing.status !== "OPEN") {
+      return res.status(400).json({ error: "Only OPEN disputes can be moved to review" });
+    }
     const dispute = await db.dispute.update({
       where: { id: req.params.id },
       data: { status: "UNDER_REVIEW" },
@@ -88,6 +93,11 @@ router.patch("/:id/review", requireAdmin, async (req, res) => {
 // PATCH /api/disputes/:id/resolve
 router.patch("/:id/resolve", requireAdmin, async (req, res) => {
   try {
+    const existing = await db.dispute.findUnique({ where: { id: req.params.id } });
+    if (!existing) return res.status(404).json({ error: "Dispute not found" });
+    if (existing.status === "RESOLVED") {
+      return res.status(400).json({ error: "Dispute is already resolved" });
+    }
     const dispute = await db.dispute.update({
       where: { id: req.params.id },
       data: { status: "RESOLVED", resolvedAt: new Date() },

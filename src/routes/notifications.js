@@ -7,8 +7,8 @@ const { sendSMS } = require("../services/sms");
 // GET /api/notifications — list all notifications
 router.get("/", requireAdmin, async (req, res) => {
   try {
-    const page = parseInt(req.query.page) || 1;
-    const limit = parseInt(req.query.limit) || 50;
+    const page = Math.max(1, parseInt(req.query.page) || 1);
+    const limit = Math.min(100, Math.max(1, parseInt(req.query.limit) || 50));
     const skip = (page - 1) * limit;
 
     const [notifications, total] = await Promise.all([

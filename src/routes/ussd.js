@@ -8,6 +8,16 @@ const { sendPaymentReceipt } = require("../services/notifications");
 // In-memory store for multi-step USSD enrollment
 const enrollSessions = {};
 
+// Clean up abandoned sessions older than 10 minutes
+setInterval(() => {
+  const now = Date.now();
+  for (const sid of Object.keys(enrollSessions)) {
+    if (now - (enrollSessions[sid]._ts || 0) > 10 * 60 * 1000) {
+      delete enrollSessions[sid];
+    }
+  }
+}, 5 * 60 * 1000);
+
 // POST /ussd — Africa's Talking USSD callback
 router.post("/", async (req, res) => {
   const { sessionId, phoneNumber, text } = req.body;
@@ -75,7 +85,7 @@ router.post("/", async (req, res) => {
       // ── 1. Register ─────────────────────────────────────────
       if (parts[0] === "1") {
         if (!enrollSessions[sessionId]) {
-          enrollSessions[sessionId] = {};
+          enrollSessions[sessionId] = { _ts: Date.now() };
         }
         const s = enrollSessions[sessionId];
 
@@ -86,19 +96,25 @@ router.post("/", async (req, res) => {
 
         // Step 2: Got name, ask national ID
         if (level === 2) {
-          s.name = last;
+          if (!last || last.length < 3 || last.length > 100) {
+            return end("Invalid name. Must be 3-100 characters.");
+          }
+          s.name = last.trim();
           return cont("Enter your National ID number:");
         }
 
         // Step 3: Got national ID, ask license
         if (level === 3) {
-          s.nationalId = last;
+          if (!last || last.length < 10 || last.length > 20) {
+            return end("Invalid National ID. Must be 10-20 characters.");
+          }
+          s.nationalId = last.trim();
           return cont("Enter your driving license number:");
         }
 
         // Step 4: Got license, confirm
         if (level === 4) {
-          s.licenseNumber = last;
+          s.licenseNumber = last.trim();
           return cont(
             `Confirm your details:\n` +
               `Name: ${s.name}\n` +
