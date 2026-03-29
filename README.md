@@ -8,9 +8,9 @@ A USSD-native, Mobile Money-integrated platform that converts daily motorcycle r
 
 **Repository:** https://github.com/Git-with-gideon/FoundationProject_MotoLift
 
-**Task Sheet:**https://docs.google.com/spreadsheets/d/1iEqdtwhfFibff4vJWTb1KE4MlSolgAJR1WLhSyDbazY
+**Task Sheet:** https://docs.google.com/spreadsheets/d/1iEqdtwhfFibff4vJWTb1KE4MlSolgAJR1WLhSyDbazY
 
-**Youtueb:**https://youtu.be/CQwgzxcMmuo
+**Youtueb:** https://youtu.be/CQwgzxcMmuo
 
 ## Problem
 
