@@ -13,6 +13,8 @@ function requireOwner(req, res, next) {
   });
 }
 
+const RW_MOTO_PLATE_REGEX = /^[Rr][A-Za-z] ?\d{3}[A-Za-z]$/;
+
 // POST /api/owner/motorcycles — owner adds a bike to their fleet
 router.post("/motorcycles", requireOwner, async (req, res) => {
   const { plateNumber, make, model, year, totalPrice } = req.body;
@@ -21,14 +23,26 @@ router.post("/motorcycles", requireOwner, async (req, res) => {
       .status(400)
       .json({ error: "plateNumber, make, model, year, totalPrice required" });
   }
+  const normalizedPlate = String(plateNumber).toUpperCase().trim();
+  if (!RW_MOTO_PLATE_REGEX.test(normalizedPlate)) {
+    return res.status(400).json({ error: "Invalid Rwanda plate format. Expected: RC 123X" });
+  }
+  const parsedYear = parseInt(year);
+  const parsedPrice = parseInt(totalPrice);
+  if (isNaN(parsedYear) || parsedYear < 2000 || parsedYear > new Date().getFullYear() + 1) {
+    return res.status(400).json({ error: "Invalid year" });
+  }
+  if (isNaN(parsedPrice) || parsedPrice <= 0) {
+    return res.status(400).json({ error: "totalPrice must be a positive number" });
+  }
   try {
     const moto = await db.motorcycle.create({
       data: {
-        plateNumber,
+        plateNumber: normalizedPlate,
         make,
         model,
-        year: parseInt(year),
-        totalPrice: parseInt(totalPrice),
+        year: parsedYear,
+        totalPrice: parsedPrice,
         ownerId: req.user.id,
       },
     });
@@ -87,6 +101,14 @@ router.post("/assign-driver", requireOwner, async (req, res) => {
       .json({
         error: "driverId, motorcycleId, dailyPayment, totalAmount required",
       });
+  }
+  const parsedDaily = parseInt(dailyPayment);
+  const parsedTotal = parseInt(totalAmount);
+  if (isNaN(parsedDaily) || parsedDaily <= 0 || isNaN(parsedTotal) || parsedTotal <= 0) {
+    return res.status(400).json({ error: "Payment amounts must be positive numbers" });
+  }
+  if (parsedDaily > parsedTotal) {
+    return res.status(400).json({ error: "dailyPayment cannot exceed totalAmount" });
   }
   try {
     const result = await db.$transaction(async (tx) => {

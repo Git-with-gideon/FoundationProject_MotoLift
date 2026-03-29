@@ -11,11 +11,16 @@ function generateToken() {
   return crypto.randomBytes(32).toString("hex");
 }
 
+const RW_PHONE_REGEX = /^\+250\d{9}$/;
+
 // POST /api/auth/login
 router.post("/login", async (req, res) => {
   const { phone, password } = req.body;
   if (!phone || !password) {
     return res.status(400).json({ error: "Phone and password required" });
+  }
+  if (!RW_PHONE_REGEX.test(phone)) {
+    return res.status(400).json({ error: "Invalid phone format. Use +250XXXXXXXXX" });
   }
 
   try {
@@ -45,6 +50,9 @@ router.post("/register-owner", async (req, res) => {
     return res
       .status(400)
       .json({ error: "Phone, name, and password required" });
+  }
+  if (!RW_PHONE_REGEX.test(phone)) {
+    return res.status(400).json({ error: "Invalid phone format. Use +250XXXXXXXXX" });
   }
   if (password.length < 6) {
     return res
