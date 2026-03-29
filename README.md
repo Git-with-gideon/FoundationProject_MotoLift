@@ -10,7 +10,7 @@ A USSD-native, Mobile Money-integrated platform that converts daily motorcycle r
 
 **Task Sheet:** https://docs.google.com/spreadsheets/d/1iEqdtwhfFibff4vJWTb1KE4MlSolgAJR1WLhSyDbazY
 
-**Youtueb:** https://youtu.be/CQwgzxcMmuo
+**Youtube:** https://youtu.be/CQwgzxcMmuo
 
 ## Problem
 
