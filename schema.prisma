@@ -1,0 +1,183 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           String   @id @default(cuid())
+  phone        String   @unique
+  name         String?
+  role         Role     @default(DRIVER)
+  passwordHash String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  driver             Driver?
+  sessions           Session[]
+  notifications      Notification[]
+  ownedMotorcycles   Motorcycle[]   @relation("OwnedMotorcycles")
+}
+
+model Session {
+  id        String   @id @default(cuid())
+  userId    String
+  token     String   @unique
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id])
+}
+
+model Driver {
+  id            String   @id @default(cuid())
+  userId        String   @unique
+  nationalId    String   @unique
+  licenseNumber String   @unique
+  status        DriverStatus @default(PENDING)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  user       User              @relation(fields: [userId], references: [id])
+  agreements RentalAgreement[]
+  disputes   Dispute[]
+}
+
+model Motorcycle {
+  id           String   @id @default(cuid())
+  plateNumber  String   @unique
+  make         String
+  model        String
+  year         Int
+  totalPrice   Int      // in RWF
+  status       BikeStatus @default(AVAILABLE)
+  ownerId      String?
+  createdAt    DateTime @default(now())
+
+  owner      User?             @relation("OwnedMotorcycles", fields: [ownerId], references: [id])
+  agreements RentalAgreement[]
+}
+
+model RentalAgreement {
+  id              String    @id @default(cuid())
+  driverId        String
+  motorcycleId    String
+  dailyPayment    Int       // in RWF
+  totalAmount     Int       // in RWF
+  startDate       DateTime  @default(now())
+  expectedEndDate DateTime
+  status          AgreementStatus @default(ACTIVE)
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  driver     Driver       @relation(fields: [driverId], references: [id])
+  motorcycle Motorcycle   @relation(fields: [motorcycleId], references: [id])
+  payments   Payment[]
+  escrow     EscrowLedger[]
+  ownership  OwnershipRecord[]
+  disputes   Dispute[]
+}
+
+model Payment {
+  id          String        @id @default(cuid())
+  agreementId String
+  amount      Int           // in RWF
+  momoRef     String?       @unique
+  method      PaymentMethod @default(MOMO)
+  status      PaymentStatus @default(PENDING)
+  paidAt      DateTime?
+  createdAt   DateTime      @default(now())
+
+  agreement RentalAgreement @relation(fields: [agreementId], references: [id])
+}
+
+model EscrowLedger {
+  id                  String   @id @default(cuid())
+  agreementId         String
+  totalPaid           Int      // cumulative RWF paid
+  ownershipPercentage Float    // 0.00 - 100.00
+  recordedAt          DateTime @default(now())
+
+  agreement RentalAgreement @relation(fields: [agreementId], references: [id])
+}
+
+model OwnershipRecord {
+  id          String   @id @default(cuid())
+  agreementId String   @unique
+  transferredAt DateTime @default(now())
+  documentRef String?
+
+  agreement RentalAgreement @relation(fields: [agreementId], references: [id])
+}
+
+model Notification {
+  id        String   @id @default(cuid())
+  userId    String
+  message   String
+  channel   String   @default("SMS")
+  sent      Boolean  @default(false)
+  sentAt    DateTime?
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id])
+}
+
+model Dispute {
+  id          String        @id @default(cuid())
+  driverId    String
+  agreementId String?
+  description String
+  status      DisputeStatus @default(OPEN)
+  resolvedAt  DateTime?
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  driver    Driver           @relation(fields: [driverId], references: [id])
+  agreement RentalAgreement? @relation(fields: [agreementId], references: [id])
+}
+
+enum Role {
+  DRIVER
+  ADMIN
+  OWNER
+}
+
+enum DriverStatus {
+  PENDING
+  ACTIVE
+  SUSPENDED
+}
+
+enum BikeStatus {
+  AVAILABLE
+  RENTED
+  OWNED
+  MAINTENANCE
+}
+
+enum AgreementStatus {
+  ACTIVE
+  COMPLETED
+  DEFAULTED
+}
+
+enum PaymentMethod {
+  MOMO
+  AIRTEL
+  CASH
+}
+
+enum PaymentStatus {
+  PENDING
+  SUCCESS
+  FAILED
+}
+
+enum DisputeStatus {
+  OPEN
+  UNDER_REVIEW
+  RESOLVED
+}
