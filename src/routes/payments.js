@@ -196,3 +196,44 @@ router.get("/check/:momoRef", requireAuth, async (req, res) => {
     res.status(500).json({ error: "Internal server error" });
   }
 });
+
+// Shared helper: mark payment SUCCESS, update escrow, check for completion, send receipt
+async function confirmPayment(paymentId, agreementId, amount, totalAmount) {
+  await db.payment.update({
+    where: { id: paymentId },
+    data: { status: "SUCCESS", paidAt: new Date() },
+  });
+
+  // Get cumulative paid amount
+  const agg = await db.payment.aggregate({
+    where: { agreementId, status: "SUCCESS" },
+    _sum: { amount: true },
+  });
+  const totalPaid = agg._sum.amount || 0;
+  const ownershipPercentage = Math.min(100, (totalPaid / totalAmount) * 100);
+
+  await db.escrowLedger.create({
+    data: { agreementId, totalPaid, ownershipPercentage },
+  });
+
+  // If fully paid, complete the agreement
+  if (ownershipPercentage >= 100) {
+    await db.rentalAgreement.update({
+      where: { id: agreementId },
+      data: { status: "COMPLETED" },
+    });
+    await db.ownershipRecord.upsert({
+      where: { agreementId },
+      update: { transferredAt: new Date() },
+      create: { agreementId, transferredAt: new Date() },
+    });
+  }
+
+  // Send SMS receipt
+  const payment = await db.payment.findUnique({ where: { id: paymentId } });
+  sendPaymentReceipt(payment).catch((err) =>
+    console.error("[Receipt] SMS failed:", err.message),
+  );
+}
+
+module.exports = router;
